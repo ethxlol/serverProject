@@ -49,8 +49,18 @@ router.post('/', requiresAuth(), async function (req, res, next) {
 	res.end();
 });
 
-router.get('/:pictureName', requiresAuth(), function (req, res, next) {
-	res.render('pictureDetails', { picture: req.params.pictureName });
+router.get('/:pictureName', requiresAuth(), async function (req, res, next) {
+	let my_file = await s3
+		.getObject({
+			Bucket: process.env.CYCLIC_BUCKET_NAME,
+			Key: 'public/' + req.params.pictureName,
+		})
+		.promise();
+	const picture = {
+		src: Buffer.from(my_file.Body).toString('base64'),
+		name: req.params.pictureName,
+	};
+	res.render('pictureDetails', { picture: picture });
 });
 
 module.exports = router;
