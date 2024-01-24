@@ -3,12 +3,14 @@ var router = express.Router();
 const fs = require('fs');
 var path = require('path');
 
+const { requiresAuth } = require('express-openid-connect');
+
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 
 // Or
 /* GET pictures listing. */
-router.get('/', async function (req, res, next) {
+router.get('/', requiresAuth(), async function (req, res, next) {
 	var params = {
 		Bucket: process.env.CYCLIC_BUCKET_NAME,
 		Delimiter: '/',
@@ -34,7 +36,7 @@ router.get('/', async function (req, res, next) {
 	res.render('pictures', { pictures: pictures, title: 'Express' });
 });
 // Saving to S3
-router.post('/', async function (req, res, next) {
+router.post('/', requiresAuth(), async function (req, res, next) {
 	const file = req.files.file;
 	console.log(req.files);
 	await s3
@@ -47,7 +49,7 @@ router.post('/', async function (req, res, next) {
 	res.end();
 });
 
-router.get('/:pictureName', function (req, res, next) {
+router.get('/:pictureName', requiresAuth(), function (req, res, next) {
 	res.render('pictureDetails', { picture: req.params.pictureName });
 });
 

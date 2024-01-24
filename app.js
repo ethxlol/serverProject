@@ -12,6 +12,31 @@ var picturesRouter = require('./routes/pictures');
 var app = express();
 app.use(fileUpload());
 
+const { auth } = require('express-openid-connect');
+
+const config = {
+	authRequired: false,
+	auth0Logout: true,
+};
+
+const port = process.env.PORT || 3000;
+if (
+	!config.baseURL &&
+	!process.env.BASE_URL &&
+	process.env.PORT &&
+	process.env.NODE_ENV !== 'production'
+) {
+	config.baseURL = `http://localhost:${port}`;
+}
+
+app.use(auth(config));
+
+// Middleware to make the `user` object available for all views
+app.use(function (req, res, next) {
+	res.locals.user = req.oidc.user;
+	next();
+});
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');

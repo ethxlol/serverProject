@@ -10,7 +10,11 @@
 			crossorigin="anonymous" />
 	</head>
 	<body>
-		<% pictures.forEach(function(picture){ %>
+		<% if (locals.isAuthenticated) { %>
+		<p>You are logged in.</p>
+		<% } else { %>
+		<p>You are not logged in. <a href="/login" class="underline">Login</a>.</p>
+		<% } %> <% pictures.forEach(function(picture){ %>
 		<div class="text-center">
 			<img
 				class="mb-3"
