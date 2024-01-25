@@ -11,14 +11,14 @@ const s3 = new AWS.S3();
 // Or
 /* GET pictures listing. */
 router.get('/', requiresAuth(), async function (req, res, next) {
+	console.log(req.oidc.user);
 	var params = {
 		Bucket: process.env.CYCLIC_BUCKET_NAME,
 		Delimiter: '/',
-		Prefix: 'public/',
+		Prefix: req.oidc.user.email + '/',
 	};
 	var allObjects = await s3.listObjects(params).promise();
 	var keys = allObjects?.Contents.map((x) => x.Key);
-
 	const pictures = await Promise.all(
 		keys.map(async (key) => {
 			let my_file = await s3
@@ -33,7 +33,7 @@ router.get('/', requiresAuth(), async function (req, res, next) {
 			};
 		})
 	);
-	res.render('pictures', { pictures: pictures, title: 'Express' });
+	res.render('pictures', { pictures: pictures });
 });
 // Saving to S3
 router.post('/', requiresAuth(), async function (req, res, next) {
@@ -43,7 +43,7 @@ router.post('/', requiresAuth(), async function (req, res, next) {
 		.putObject({
 			Body: file.data,
 			Bucket: process.env.CYCLIC_BUCKET_NAME,
-			Key: 'public/' + file.name,
+			Key: req.oidc.user.email + '/' + file.name,
 		})
 		.promise();
 	res.end();
